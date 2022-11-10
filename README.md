@@ -14,10 +14,9 @@ docker compose up ner-english-fast
 
 The prior model conversion step will place the `model.pt` file in the `workspace/triton-models/flair-ner-english-fast/1` folder. This will then be bound to the container for serving and will be the model_repo. The default configuration assumes serving is done on an NVIDIA GPU but this could be modified here: `workspace/triton-models/flair-ner-english-fast/config.pbtxt`
 
-``sh
+```sh
 docker compose up triton-server
-
-````
+```
 
 ## Performance
 
@@ -25,7 +24,7 @@ There is a script which utilized NVIDIA's `perf_analyzer` tool which can quickly
 
 ```sh
 docker compose up triton-client
-````
+```
 
 Below are some preliminary results to serve as a simple benchmark to be improved upon.
 
