@@ -1,5 +1,7 @@
 # Flair Models on NVIDIA Triton Server
 
+Scripts to help deploy the Flair ner-english-fast model on Triton Server as a TorchScript model.
+
 ## Model Conversion to TorchScript
 
 The flair models are a composition of multiple models which complete embedding and tagging of strings. The default method modifies a `Sentence` inplace. Serving on Triton will convert any string-as-bytes input to the appropriate tokenization and embeding used in the original flair ner-fast model. You can convert the original meta-model hosted on HuggingFace by running:
@@ -15,11 +17,12 @@ The prior model conversion step will place the `model.pt` file in the `workspace
 ## Performance
 
 There is a script which utilized NVIDIA's `perf_analyzer` tool which can quickly report details about latency for your model set up.
+
 ```sh
 docker compose up triton-client
 ```
 
-Below are some preliminary results to serve as a simple benchmark to be improved upon. 
+Below are some preliminary results to serve as a simple benchmark to be improved upon.
 
 | Name                   | Platform         | Inputs | Outputs | Batch | Status |
 | ---------------------- | ---------------- | ------ | ------- | ----- | ------ |
