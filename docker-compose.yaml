@@ -1,0 +1,77 @@
+services:
+  ner-english-fast:
+    build:
+      args:
+        - FROM_BASE_IMAGE=nvcr.io/nvidia/pytorch:${MAJOR_BRANCH}-py3
+      context: .
+      dockerfile: Dockerfile
+    image: ner-english-fast
+    shm_size: 16g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    runtime: nvidia
+    entrypoint: ["python", "flair_model_surgery.py"]
+    working_dir: "/workspace"
+    hostname: ner-english-fast
+    networks:
+      triton-server:
+        ipv4_address: ${INTERACTIVE_CLIENT_IP}
+    volumes:
+      - type: bind
+        source: workspace
+        target: /workspace
+
+  triton-server:
+    image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3
+    shm_size: 16g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    runtime: nvidia
+    ports:
+      - 8000:8000
+      - 8001:8001
+      - 8002:8002
+    entrypoint:
+      [
+        "tritonserver",
+        "--model-repository=/models",
+        "--allow-metrics=true",
+        "--allow-gpu-metrics=true",
+        "--log-verbose=0",
+      ]
+    hostname: triton-server
+    networks:
+      triton-server:
+        ipv4_address: ${TRITON_SERVER_IP}
+    volumes:
+      - type: bind
+        source: workspace/triton-models
+        target: /models
+
+  triton-client:
+    image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3-sdk
+    environment:
+      - TRITON_SERVER_IP=${TRITON_SERVER_IP}
+    shm_size: 16g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    entrypoint: ["bash", "/workspace/model_analyzer.sh"]
+    hostname: triton-client
+    networks:
+      triton-server:
+        ipv4_address: ${TRITON_CLIENT_IP}
+    volumes:
+      - type: bind
+        source: workspace
+        target: /workspace
+
+  
+networks:
+  triton-server:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET}

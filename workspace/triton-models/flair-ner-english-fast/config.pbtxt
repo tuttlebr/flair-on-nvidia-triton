@@ -1,0 +1,30 @@
+name: "flair-ner-english-fast"
+platform: "pytorch_libtorch"
+max_batch_size: 64
+dynamic_batching {
+  preferred_batch_size: [ 1, 8, 16 ]
+  max_queue_delay_microseconds: 50000
+}
+
+instance_group [
+  {
+    count: 8
+    kind: KIND_GPU
+  }
+]
+
+
+input [
+  {
+    name: "INPUT__0"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  }
+]
+output [
+    {
+        name: "OUTPUT__0"
+        data_type: TYPE_UINT8
+        dims: [ -1 ]
+    }
+  ]

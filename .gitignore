@@ -1,0 +1,11 @@
+*.tar
+*.pt
+*.bin
+*.ipynb_checkpoints
+*__pycache__/*
+*.Trash-0
+*.pyc
+*.pyo*
+ignore.py
+archive
+cleanup.sh
