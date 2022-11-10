@@ -16,7 +16,8 @@ The prior model conversion step will place the `model.pt` file in the `workspace
 
 ``sh
 docker compose up triton-server
-``
+
+````
 
 ## Performance
 
@@ -24,7 +25,7 @@ There is a script which utilized NVIDIA's `perf_analyzer` tool which can quickly
 
 ```sh
 docker compose up triton-client
-```
+````
 
 Below are some preliminary results to serve as a simple benchmark to be improved upon.
 
