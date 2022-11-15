@@ -20,7 +20,7 @@ output {
 instance_group {
   name: "flair-ner-english-fast"
   count: 4
-  gpus: 1
+  gpus: 0
   kind: KIND_GPU
 }
 default_model_filename: "model.pt"
