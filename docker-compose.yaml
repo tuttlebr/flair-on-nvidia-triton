@@ -11,7 +11,21 @@ services:
       memlock: -1
       stack: 67108864
     runtime: nvidia
-    entrypoint: ["python", "flair_model_surgery.py"]
+    # entrypoint: ["python", "flair_model_surgery.py"]
+    # entrypoint: ["python", "bert_model_surgery.py"]
+    ports:
+      - 8888:8888
+    entrypoint:
+      [
+        "jupyter",
+        "lab",
+        "--ServerApp.ip=0.0.0.0",
+        "--ServerApp.port=8888",
+        "--ServerApp.allow_root=True",
+        "--ServerApp.token=",
+        "--ServerApp.password=",
+        "--Application.log_level='CRITICAL'",
+      ]
     working_dir: "/workspace"
     hostname: ner-english-fast
     networks:

@@ -1,4 +1,4 @@
-name: "flair-ner-english-fast"
+name: "bert-base-uncased"
 platform: "pytorch_libtorch"
 version_policy {
   latest {
@@ -11,16 +11,21 @@ input {
   data_type: TYPE_UINT8
   dims: -1
 }
-output {
-  name: "OUTPUT__0"
+input {
+  name: "INPUT__1"
   data_type: TYPE_UINT8
-  dims: 1
   dims: -1
 }
+output {
+  name: "OUTPUT__0"
+  data_type: TYPE_FP32
+  dims: -1
+  dims: 768
+}
 instance_group {
-  name: "flair-ner-english-fast"
+  name: "bert-base-uncased"
   count: 4
-  gpus: 1
+  gpus: 0
   kind: KIND_GPU
 }
 default_model_filename: "model.pt"

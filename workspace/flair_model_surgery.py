@@ -1,7 +1,3 @@
-import warnings
-warnings.filterwarnings("ignore")
-warnings.simplefilter("ignore")
-
 from flair.data import Sentence
 from flair.models import SequenceTagger
 import torch
@@ -25,14 +21,22 @@ class CustomModel(torch.nn.Module):
         string = bytes(INPUT__0).decode()
         sentence = Sentence(string)
         self.model.predict(sentence)
-        return torch.ByteTensor(list(bytes(str(sentence), "utf8")))
+        string_spans = sentence.to_tagged_string()
+        return torch.ByteTensor(
+            list(
+                bytes(
+                    string_spans, "utf8"
+                )
+            )
+        ).reshape(1, -1)
 
 
 custom_model = CustomModel().eval()
 INPUT__0 = custom_model.dummy_input()
 OUTPUT__0 = custom_model.forward(INPUT__0)
+print(OUTPUT__0.dtype)
 
-traced_model = torch.jit.trace(func=custom_model, example_inputs=INPUT__0)
+traced_model = torch.jit.trace(func=custom_model, example_inputs=[INPUT__0])
 
 traced_model.save("/workspace/triton-models/flair-ner-english-fast/1/model.pt")
 

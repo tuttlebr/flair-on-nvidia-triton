@@ -9,7 +9,7 @@ export STEP_CONCURRENCY=${CPU_COUNT}
 export CONCURRENCY_RUNS=4
 export MIN_CONCURRENCY=${CPU_COUNT}
 export MAX_CONCURRENCY=$((${CPU_COUNT}*${CONCURRENCY_RUNS}))
-export MODEL_MANIFEST="flair-ner-english-fast"
+export MODEL_MANIFEST="bert-base-uncased"
 
 
 function traverse_input(){
