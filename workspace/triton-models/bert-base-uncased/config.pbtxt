@@ -8,12 +8,12 @@ version_policy {
 max_batch_size: 16
 input {
   name: "INPUT__0"
-  data_type: TYPE_UINT8
+  data_type: TYPE_INT64
   dims: -1
 }
 input {
   name: "INPUT__1"
-  data_type: TYPE_UINT8
+  data_type: TYPE_INT64
   dims: -1
 }
 output {

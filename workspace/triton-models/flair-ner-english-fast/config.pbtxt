@@ -5,18 +5,39 @@ version_policy {
     num_versions: 1
   }
 }
-max_batch_size: 16
 input {
   name: "INPUT__0"
-  data_type: TYPE_UINT8
+  data_type: TYPE_INT64
   dims: -1
 }
+input {
+  name: "INPUT__1"
+  data_type: TYPE_FP32
+  dims: -1
+  dims: -1
+  dims: 2148
+}
+
+
 output {
   name: "OUTPUT__0"
-  data_type: TYPE_UINT8
+  data_type: TYPE_FP32
   dims: 1
   dims: -1
 }
+output {
+  name: "OUTPUT__1"
+  data_type: TYPE_INT64
+  dims: 1
+  dims: -1
+}
+output {
+  name: "OUTPUT__2"
+  data_type: TYPE_FP32
+  dims: 1
+  dims: -1
+}
+
 instance_group {
   name: "flair-ner-english-fast"
   count: 4
@@ -24,12 +45,7 @@ instance_group {
   kind: KIND_GPU
 }
 default_model_filename: "model.pt"
-dynamic_batching {
-  preferred_batch_size: 1
-  preferred_batch_size: 8
-  preferred_batch_size: 16
-  max_queue_delay_microseconds: 50000
-}
+
 optimization {
   input_pinned_memory {
     enable: true

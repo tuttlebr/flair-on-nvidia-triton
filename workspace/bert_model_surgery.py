@@ -4,6 +4,7 @@ from transformers import BertTokenizer, BertModel
 
 text_0 = "Who was Jim Henson?"
 text_1 = "Jim Henson was a puppeteer"
+save_as = "/workspace/triton-models/bert-base-uncased/1/model.pt"
 
 
 class TritonBertModel(torch.nn.Module):
@@ -38,5 +39,7 @@ if __name__ == '__main__':
          tokenized_tensor_1["attention_mask"]),
         axis=1)
     model = TritonBertModel().eval()
-    traced_model.save("/workspace/triton-models/bert-base-uncased/1/model.pt")\
-        print("saved TorchScript model as /workspace/triton-models/bert-base-uncased/1/model.pt")
+
+    traced_model = torch.jit.trace(model, [tokens_tensor, segments_tensors])
+    torch.jit.save(traced_model, save_as)
+    print("saved TorchScript model as {}".format(save_as))
