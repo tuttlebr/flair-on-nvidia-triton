@@ -10,6 +10,7 @@ export CONCURRENCY_RUNS=4
 export MIN_CONCURRENCY=${CPU_COUNT}
 export MAX_CONCURRENCY=$((${CPU_COUNT}*${CONCURRENCY_RUNS}))
 export MODEL_MANIFEST="bert-base-uncased"
+export MAX_THREADS=16
 
 
 function traverse_input(){
@@ -60,7 +61,7 @@ do
         batchsize=1
     elif [[ $batchsize -le 0 ]]; then 
         unset batchsize
-        batchsize=1
+        batchsize=0
     fi
 
     code_status=$(curl -m 1 -L -s -o /dev/null -w %{http_code} $TRITON_SERVER_IP:8000/v2/models/$MODEL/versions/1/ready)
@@ -68,16 +69,16 @@ do
     printf "$pattern" $name $platform "${inputs}" "${outputs}" $batchsize $status
 
     extra_args=$(traverse_input $config)
+    echo $extra_args
     perf_analyzer \
         -m $MODEL \
-        -a \
         -i grpc \
         -u $TRITON_SERVER_IP:8001 \
-        --max-threads $(($(nproc)*4)) \
+        --max-threads $MAX_THREADS \
         --request-distribution constant \
         --measurement-interval 30000 \
         --concurrency-range $MIN_CONCURRENCY:$MAX_CONCURRENCY:$STEP_CONCURRENCY \
-        -b $batchsize $extra_args
+        $extra_args
 done
 printf "%.${TableWidth}s\n" "$seperator"
 sleep 600

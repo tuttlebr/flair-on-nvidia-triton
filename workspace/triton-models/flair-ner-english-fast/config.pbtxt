@@ -40,7 +40,7 @@ output {
 
 instance_group {
   name: "flair-ner-english-fast"
-  count: 4
+  count: 1
   gpus: 0
   kind: KIND_GPU
 }

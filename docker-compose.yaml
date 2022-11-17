@@ -6,11 +6,11 @@ services:
       context: .
       dockerfile: Dockerfile
     image: ner-english-fast
-    shm_size: 16g
+    shm_size: 8g
     ulimits:
       memlock: -1
       stack: 67108864
-    runtime: nvidia
+    # runtime: nvidia
     # entrypoint: ["python", "flair_model_surgery.py"]
     # entrypoint: ["python", "bert_model_surgery.py"]
     ports:
@@ -38,7 +38,7 @@ services:
 
   triton-server:
     image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3
-    shm_size: 16g
+    shm_size: 8g
     ulimits:
       memlock: -1
       stack: 67108864
@@ -68,10 +68,11 @@ services:
     image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3-sdk
     environment:
       - TRITON_SERVER_IP=${TRITON_SERVER_IP}
-    shm_size: 16g
+    shm_size: 8g
     ulimits:
       memlock: -1
       stack: 67108864
+    # runtime: nvidia
     entrypoint: ["bash", "/workspace/model_analyzer.sh"]
     hostname: triton-client
     networks:

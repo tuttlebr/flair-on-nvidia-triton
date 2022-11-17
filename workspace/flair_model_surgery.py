@@ -10,6 +10,8 @@ string_list = [
 
 save_as = "/workspace/triton-models/flair-ner-english-fast/1/model.pt"
 
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+
 
 class TritonFastNERTagger(torch.nn.Module):
     def __init__(self, tagger, viterbi_decoder):
@@ -25,7 +27,7 @@ class TritonFastNERTagger(torch.nn.Module):
         pre_allocated_zero_tensor = torch.zeros(
             self.tagger.embedding_length * longest_token_sequence_in_batch,
             dtype=torch.float,
-            device="cuda:0",
+            device=DEVICE,
         )
         all_embs = list()
         for sentence in sentences:

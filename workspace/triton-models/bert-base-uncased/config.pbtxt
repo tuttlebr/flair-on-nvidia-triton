@@ -9,22 +9,24 @@ version_policy {
 input {
   name: "INPUT__0"
   data_type: TYPE_INT64
+  dims: 1
   dims: -1
 }
 input {
   name: "INPUT__1"
   data_type: TYPE_INT64
+  dims: 1
   dims: -1
 }
 output {
   name: "OUTPUT__0"
   data_type: TYPE_FP32
-  dims: -1
+  dims: 1
   dims: 768
 }
 instance_group {
   name: "bert-base-uncased"
-  count: 4
+  count: 1
   gpus: 0
   kind: KIND_GPU
 }
