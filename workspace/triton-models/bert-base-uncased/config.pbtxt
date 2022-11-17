@@ -5,7 +5,7 @@ version_policy {
     num_versions: 1
   }
 }
-max_batch_size: 16
+
 input {
   name: "INPUT__0"
   data_type: TYPE_INT64
@@ -29,12 +29,7 @@ instance_group {
   kind: KIND_GPU
 }
 default_model_filename: "model.pt"
-dynamic_batching {
-  preferred_batch_size: 1
-  preferred_batch_size: 8
-  preferred_batch_size: 16
-  max_queue_delay_microseconds: 50000
-}
+
 optimization {
   input_pinned_memory {
     enable: true
