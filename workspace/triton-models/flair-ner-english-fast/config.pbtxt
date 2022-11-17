@@ -8,12 +8,12 @@ version_policy {
 input {
   name: "INPUT__0"
   data_type: TYPE_INT64
-  dims: -1
+  dims: 1
 }
 input {
   name: "INPUT__1"
   data_type: TYPE_FP32
-  dims: -1
+  dims: 1
   dims: -1
   dims: 2148
 }
@@ -24,18 +24,19 @@ output {
   data_type: TYPE_FP32
   dims: 1
   dims: -1
+  dims: 20
+  dims: 20
 }
 output {
   name: "OUTPUT__1"
   data_type: TYPE_INT64
   dims: 1
-  dims: -1
 }
 output {
   name: "OUTPUT__2"
   data_type: TYPE_FP32
-  dims: 1
-  dims: -1
+  dims: 20
+  dims: 20
 }
 
 instance_group {

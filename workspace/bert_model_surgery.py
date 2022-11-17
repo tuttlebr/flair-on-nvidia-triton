@@ -40,6 +40,16 @@ if __name__ == '__main__':
         axis=1)
     model = TritonBertModel().eval()
 
+    print("INPUT__0 dims: {}".format(tokens_tensor.shape))
+    print("INPUT__0 dtype: {}\n".format(tokens_tensor.dtype))
+
+    print("INPUT__1 dims: {}".format(segments_tensors.shape))
+    print("INPUT__1 dtype: {}\n".format(segments_tensors.dtype))
+
+    embedding_oputput = model.forward(tokens_tensor, segments_tensors)
+    print("OUTPUT__0 dims: {}".format(embedding_oputput.shape))
+    print("OUTPUT__0 dtype: {}\n".format(embedding_oputput.dtype))
+
     traced_model = torch.jit.trace(model, [tokens_tensor, segments_tensors])
     torch.jit.save(traced_model, save_as)
     print("saved TorchScript model as {}".format(save_as))

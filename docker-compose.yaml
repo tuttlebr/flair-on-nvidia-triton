@@ -10,9 +10,6 @@ services:
     ulimits:
       memlock: -1
       stack: 67108864
-    # runtime: nvidia
-    # entrypoint: ["python", "flair_model_surgery.py"]
-    # entrypoint: ["python", "bert_model_surgery.py"]
     ports:
       - 8888:8888
     entrypoint:
@@ -63,27 +60,7 @@ services:
       - type: bind
         source: workspace/triton-models
         target: /models
-
-  triton-client:
-    image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3-sdk
-    environment:
-      - TRITON_SERVER_IP=${TRITON_SERVER_IP}
-    shm_size: 8g
-    ulimits:
-      memlock: -1
-      stack: 67108864
-    # runtime: nvidia
-    entrypoint: ["bash", "/workspace/model_analyzer.sh"]
-    hostname: triton-client
-    networks:
-      triton-server:
-        ipv4_address: ${TRITON_CLIENT_IP}
-    volumes:
-      - type: bind
-        source: workspace
-        target: /workspace
-
-  
+ 
 networks:
   triton-server:
     driver: bridge
