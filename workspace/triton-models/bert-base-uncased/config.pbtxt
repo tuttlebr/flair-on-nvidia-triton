@@ -28,7 +28,7 @@ output {
 instance_group {
   name: "bert-base-uncased"
   count: 1
-  gpus: 0
+  gpus: 1
   kind: KIND_GPU
 }
 default_model_filename: "model.pt"

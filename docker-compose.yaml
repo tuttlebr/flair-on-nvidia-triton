@@ -16,6 +16,7 @@ services:
       [
         "jupyter",
         "lab",
+        "--no-browser",
         "--ServerApp.ip=0.0.0.0",
         "--ServerApp.port=8888",
         "--ServerApp.allow_root=True",
