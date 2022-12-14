@@ -10,6 +10,7 @@ services:
     ulimits:
       memlock: -1
       stack: 67108864
+    runtime: nvidia
     ports:
       - 8888:8888
     entrypoint:
@@ -35,7 +36,12 @@ services:
         target: /workspace
 
   triton-server:
-    image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3
+    build:
+      args:
+        - FROM_BASE_IMAGE=nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3
+      context: .
+      dockerfile: Dockerfile
+    image: ner-english-fast-triton-server
     shm_size: 8g
     ulimits:
       memlock: -1

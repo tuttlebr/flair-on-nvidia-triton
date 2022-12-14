@@ -2,15 +2,21 @@ import torch
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from flair.data import Sentence
 from flair.models import SequenceTagger
-
+import logging
 
 string_list = [
-    "With the belief that the PC one day would become a consumer device for enjoying games and multimedia, NVIDIA is founded by Jensen Huang, Chris Malachowsky and Curtis Priem."
+    "With the belief that the PC one day would become a consumer device for enjoying games and multimedia, NVIDIA is founded by Jensen Huang, Chris Malachowsky and Curtis Priem.",
 ]
 
-save_as = "/workspace/triton-models/flair-ner-english-fast/1/model.pt"
+save_model_as = "/workspace/triton-models/flair-ner-english-fast/1/model.pt"
+save_embeddings_as = "/workspace/triton-models/flair-ner-english-fast-tokenization/1/embeddings.bin"
+save_viterbi_decoder_as = "/workspace/triton-models/flair-ner-english-fast-tokenization/1/viterbi_decoder.bin"
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+
+logging.basicConfig(format="%(asctime)s %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 class TritonFastNERTagger(torch.nn.Module):
@@ -59,12 +65,16 @@ class TritonFastNERModel(torch.nn.Module):
     def forward(self, sorted_lengths, sentence_tensor):
         if self.model.use_dropout:
             sentence_tensor = self.model.dropout(sentence_tensor)
+
         if self.model.use_word_dropout:
             sentence_tensor = self.model.word_dropout(sentence_tensor)
+
         if self.model.use_locked_dropout:
             sentence_tensor = self.model.locked_dropout(sentence_tensor)
+
         if self.model.reproject_embeddings:
             sentence_tensor = self.model.embedding2nn(sentence_tensor)
+
         if self.model.use_rnn:
             packed = pack_padded_sequence(
                 sentence_tensor,
@@ -77,6 +87,7 @@ class TritonFastNERModel(torch.nn.Module):
 
         if self.model.use_dropout:
             sentence_tensor = self.model.dropout(sentence_tensor)
+
         if self.model.use_locked_dropout:
             sentence_tensor = self.model.locked_dropout(sentence_tensor)
 
@@ -92,38 +103,28 @@ class TritonFastNERModel(torch.nn.Module):
 
 
 if __name__ == '__main__':
-
     model = SequenceTagger.load("flair/ner-english-fast")
     viterbi_decoder = model.viterbi_decoder
-    tagger = model.embeddings
-    tagger = TritonFastNERTagger(tagger, viterbi_decoder)
+    embeddings = model.embeddings
+    tagger = TritonFastNERTagger(embeddings, viterbi_decoder)
     sentences = [Sentence(string) for string in string_list]
     sorted_lengths, sentence_tensor = tagger.forward(sentences)
-
-    print("INPUT__0 dims: {}".format(sorted_lengths.shape))
-    print("INPUT__0 dtype: {}\n".format(sorted_lengths.dtype))
-
-    print("INPUT__1 dims: {}".format(sentence_tensor.shape))
-    print("INPUT__1 dtype: {}\n".format(sentence_tensor.dtype))
-
     model.__delattr__("embeddings")
     traced_model = TritonFastNERModel(model)
     features, sorted_lengths, transitions = traced_model.forward(
         sorted_lengths, sentence_tensor)
 
-    print("OUTPUT__0 dims: {}".format(features.shape))
-    print("OUTPUT__0 dtype: {}\n".format(features.dtype))
-
-    print("OUTPUT__1 dims: {}".format(sorted_lengths.shape))
-    print("OUTPUT__1 dtype: {}\n".format(sorted_lengths.dtype))
-
-    print("OUTPUT__2 dims: {}".format(transitions.shape))
-    print("OUTPUT__2 dtype: {}\n".format(transitions.dtype))
-
     traced_model = torch.jit.trace(
         traced_model, [
             sorted_lengths, sentence_tensor])
-    torch.jit.save(traced_model, save_as)
-    torch.save(tagger, "tagger.bin")
-    print("saved TorchScript model as {}".format(save_as))
-    print("Saved client tagger to tagger.bin")
+
+    torch.jit.save(traced_model, save_model_as)
+    logger.info("[INFO] Saved TorchScript model as {}".format(save_model_as))
+
+    torch.save(embeddings, save_embeddings_as)
+    logger.info(
+        "[INFO] Saved Flair Embeddings as {}".format(save_embeddings_as))
+
+    torch.save(viterbi_decoder, save_viterbi_decoder_as)
+    logger.info("[INFO] Saved Flair Viterbi Decoder as {}".format(
+        save_viterbi_decoder_as))

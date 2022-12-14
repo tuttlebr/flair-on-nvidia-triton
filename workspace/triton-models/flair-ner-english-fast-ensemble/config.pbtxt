@@ -1,0 +1,75 @@
+
+name: "flair-ner-english-fast-ensemble"
+platform: "ensemble"
+max_batch_size: 0
+
+input [
+    {
+      name: "sentence_bytes"
+      data_type: TYPE_INT64
+      dims: [ -1 ]
+    }
+  ]
+
+output {
+    name: "OUTPUT__0"
+    data_type: TYPE_FP32
+    dims: [ 1, -1, 20, 20 ]
+  }
+  output {
+    name: "OUTPUT__1"
+    data_type: TYPE_INT64
+    dims: [1]
+  }
+  output {
+    name: "OUTPUT__2"
+    data_type: TYPE_FP32
+    dims: [ 20, 20 ]
+  }
+
+ensemble_scheduling {
+    step [
+        {
+            model_name: "flair-ner-english-fast-tokenization"
+            model_version: -1
+            input_map {
+                key: "sentence_bytes"
+                value: "sentence_bytes"
+            }
+
+            output_map {
+                key: "sorted_lengths"
+                value: "sorted_lengths"
+            }
+            output_map {
+                key: "sentence_tensor"
+                value: "sentence_tensor"
+            }
+        },
+        {
+            model_name: "flair-ner-english-fast"
+            model_version: -1
+            input_map: {
+                key: "INPUT__0"
+                value: "sorted_lengths"
+            }
+            input_map: {
+                key: "INPUT__1"
+                value: "sentence_tensor"
+            }
+
+            output_map {
+                key: "OUTPUT__0"
+                value: "OUTPUT__0"
+            }
+            output_map {
+                key: "OUTPUT__1"
+                value: "OUTPUT__1"
+            }
+            output_map {
+                key: "OUTPUT__2"
+                value: "OUTPUT__2"
+            }
+        }
+    ]
+}
