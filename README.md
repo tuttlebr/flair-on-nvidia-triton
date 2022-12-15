@@ -56,40 +56,40 @@ Scripts to help deploy the Flair ner-english-fast model on Triton Server as a To
        125,  93, 125])
       ```
    2. Decoded:
-   ```json
-   {
-     "NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .": [
-       {
-         "entity_group": "ORG",
-         "start": 0,
-         "word": "NVIDIA",
-         "end": 6,
-         "score": 99
-       },
-       {
-         "entity_group": "PER",
-         "start": 21,
-         "word": "Jensen Huang",
-         "end": 33,
-         "score": 99
-       },
-       {
-         "entity_group": "PER",
-         "start": 35,
-         "word": "Chris Malachowsky",
-         "end": 52,
-         "score": 99
-       },
-       {
-         "entity_group": "PER",
-         "start": 57,
-         "word": "Curtis Priem",
-         "end": 69,
-         "score": 99
-       }
-     ]
-   }
-   ```
+      ```json
+      {
+        "NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .": [
+          {
+            "entity_group": "ORG",
+            "start": 0,
+            "word": "NVIDIA",
+            "end": 6,
+            "score": 99
+          },
+          {
+            "entity_group": "PER",
+            "start": 21,
+            "word": "Jensen Huang",
+            "end": 33,
+            "score": 99
+          },
+          {
+            "entity_group": "PER",
+            "start": 35,
+            "word": "Chris Malachowsky",
+            "end": 52,
+            "score": 99
+          },
+          {
+            "entity_group": "PER",
+            "start": 57,
+            "word": "Curtis Priem",
+            "end": 69,
+            "score": 99
+          }
+        ]
+      }
+      ```
 
 ## Model Conversion to TorchScript
 
