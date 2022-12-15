@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import torch
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 from flair.data import Sentence

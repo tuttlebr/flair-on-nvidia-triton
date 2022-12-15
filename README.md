@@ -10,6 +10,8 @@ The flair models are a composition of multiple models which complete embedding a
 docker compose up ner-english-fast
 ```
 
+and from within the Jupyter Lab terminal, `python3 flair_model_surgery.py`.
+
 ## Launch Triton Server
 
 The prior model conversion step will place the `model.pt` file in the `workspace/triton-models/flair-ner-english-fast/1` folder. This will then be bound to the container for serving and will be the model_repo. The default configuration assumes serving is done on an NVIDIA GPU but this could be modified here: `workspace/triton-models/flair-ner-english-fast/config.pbtxt`
@@ -26,90 +28,58 @@ There is a script which utilized NVIDIA's `perf_analyzer` tool which can quickly
 docker compose up triton-client
 ```
 
+```sh
+docker compose run perf-analyzer
+```
+
 Below are some preliminary results to serve as a simple benchmark to be improved upon.
 
-| Name                   | Platform         | Inputs | Outputs | Batch | Status |
-| ---------------------- | ---------------- | ------ | ------- | ----- | ------ |
-| flair-ner-english-fast | pytorch_libtorch | 1      | 1       | 64    | OK     |
-
 ```sh
+ Successfully read data for 1 stream/streams with 1 step/steps.
 *** Measurement Settings ***
-  Batch size: 64
+  Batch size: 1
   Using "time_windows" mode for stabilization
   Measurement window: 30000 msec
-  Latency limit: 0 msec
-  Concurrency limit: 96 concurrent requests
   Using asynchronous calls for inference
-  Stabilizing using average latency
+  Stabilizing using p95 latency
 
-Request concurrency: 24
+Request concurrency: 4
+  Pass [1] throughput: 92.8314 infer/sec. p95 latency: 44717 usec
+  Pass [2] throughput: 93.9971 infer/sec. p95 latency: 44342 usec
+  Pass [3] throughput: 92.8868 infer/sec. p95 latency: 44900 usec
   Client:
-    Request count: 3313551
-    Throughput: 7.06891e+06 infer/sec
-    Avg latency: 210 usec (standard deviation 73 usec)
-    p50 latency: 199 usec
-    p90 latency: 288 usec
-    p95 latency: 323 usec
-    p99 latency: 411 usec
-    Avg gRPC time: 207 usec ((un)marshal request/response 1 usec + response wait 206 usec)
+    Request count: 10070
+    Throughput: 93.2384 infer/sec
+    p50 latency: 42808 usec
+    p90 latency: 44314 usec
+    p95 latency: 44660 usec
+    p99 latency: 45685 usec
+    Avg gRPC time: 42844 usec (marshal 2 usec + response wait 42842 usec + unmarshal 0 usec)
   Server:
-    Inference count: 254398528
-    Execution count: 3974977
-    Successful request count: 3974976
-    Avg request latency: 61 usec (overhead 12 usec + queue 23 usec + compute input 18 usec + compute infer 8 usec + compute output 0 usec)
+    Inference count: 10070
+    Execution count: 10070
+    Successful request count: 10070
+    Avg request latency: 42650 usec (overhead 29 usec + queue 11012 usec + compute 31609 usec)
 
-Request concurrency: 48
-  Client:
-    Request count: 3760161
-    Throughput: 8.02168e+06 infer/sec
-    Avg latency: 374 usec (standard deviation 214 usec)
-    p50 latency: 329 usec
-    p90 latency: 553 usec
-    p95 latency: 704 usec
-    p99 latency: 1242 usec
-    Avg gRPC time: 371 usec ((un)marshal request/response 1 usec + response wait 370 usec)
-  Server:
-    Inference count: 288757632
-    Execution count: 4511839
-    Successful request count: 4511839
-    Avg request latency: 112 usec (overhead 13 usec + queue 72 usec + compute input 18 usec + compute infer 8 usec + compute output 0 usec)
+  Composing models:
+  flair-ner-english-fast, version:
+      Inference count: 10072
+      Execution count: 10072
+      Successful request count: 10072
+      Avg request latency: 4271 usec (overhead 15 usec + queue 751 usec + compute input 20 usec + compute infer 2223 usec + compute output 1261 usec)
 
-Request concurrency: 72
-  Client:
-    Request count: 3864362
-    Throughput: 8.24397e+06 infer/sec
-    Avg latency: 549 usec (standard deviation 433 usec)
-    p50 latency: 450 usec
-    p90 latency: 783 usec
-    p95 latency: 1189 usec
-    p99 latency: 2517 usec
-    Avg gRPC time: 547 usec ((un)marshal request/response 1 usec + response wait 546 usec)
-  Server:
-    Inference count: 296704896
-    Execution count: 4636014
-    Successful request count: 4636014
-    Avg request latency: 176 usec (overhead 14 usec + queue 134 usec + compute input 19 usec + compute infer 8 usec + compute output 0 usec)
+  flair-ner-english-fast-tokenization, version:
+      Inference count: 10073
+      Execution count: 10073
+      Successful request count: 10073
+      Avg request latency: 6724 usec (overhead 4 usec + queue 40 usec + compute input 7 usec + compute infer 6644 usec + compute output 29 usec)
 
-Request concurrency: 96
-  Client:
-    Request count: 3901155
-    Throughput: 8.32246e+06 infer/sec
-    Avg latency: 727 usec (standard deviation 687 usec)
-    p50 latency: 559 usec
-    p90 latency: 980 usec
-    p95 latency: 1820 usec
-    p99 latency: 4038 usec
-    Avg gRPC time: 726 usec ((un)marshal request/response 1 usec + response wait 725 usec)
-  Server:
-    Inference count: 299209920
-    Execution count: 4675155
-    Successful request count: 4675155
-    Avg request latency: 231 usec (overhead 14 usec + queue 188 usec + compute input 20 usec + compute infer 8 usec + compute output 0 usec)
+  flair-ner-english-fast-viterbi-decoder, version:
+      Inference count: 10070
+      Execution count: 10070
+      Successful request count: 10070
+      Avg request latency: 31653 usec (overhead 8 usec + queue 10221 usec + compute input 45 usec + compute infer 21327 usec + compute output 52 usec)
 
-Inferences/Second vs. Client Average Batch Latency
-Concurrency: 24, throughput: 7.06891e+06 infer/sec, latency 210 usec
-Concurrency: 48, throughput: 8.02168e+06 infer/sec, latency 374 usec
-Concurrency: 72, throughput: 8.24397e+06 infer/sec, latency 549 usec
-Concurrency: 96, throughput: 8.32246e+06 infer/sec, latency 727 usec
----------------------------------------------------------------------------------------
+Inferences/Second vs. Client p95 Batch Latency
+Concurrency: 4, throughput: 93.2384 infer/sec, latency 44660 usec
 ```
