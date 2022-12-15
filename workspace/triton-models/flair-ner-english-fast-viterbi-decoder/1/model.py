@@ -3,8 +3,9 @@ import triton_python_backend_utils as pb_utils
 import logging
 import json
 import torch
+import numpy as np
 
-from embeddings import TritonFastNEREmbedding, DEVICE
+from viterbi_decoder import TritonFastNERViterbi, DEVICE
 
 logging.basicConfig(format="%(asctime)s %(message)s")
 logger = logging.getLogger()
@@ -12,7 +13,7 @@ logger.setLevel(logging.INFO)
 
 
 def string_to_bytes(string, encoding="utf-8"):
-    return list(bytes(str(string), encoding))
+    return np.array(list(bytes(str(string), encoding)))
 
 
 def bytes_to_string(byte_list):
@@ -44,14 +45,8 @@ class TritonPythonModel:
         self.model_config = json.loads(args["model_config"])
 
         # Get output configs
-        # Maps to INPUT__0
         output0_config = pb_utils.get_output_config_by_name(
-            self.model_config, "sorted_lengths"
-        )
-
-        # Maps to INPUT__1
-        output1_config = pb_utils.get_output_config_by_name(
-            self.model_config, "sentence_tensor"
+            self.model_config, "tagged_sentences"
         )
 
         # Convert Triton types to numpy types
@@ -59,14 +54,11 @@ class TritonPythonModel:
             output0_config["data_type"]
         )
 
-        self.output1_dtype = pb_utils.triton_string_to_numpy(
-            output1_config["data_type"]
-        )
-
         # Load the flair model
-        self.embeddings = torch.load(
-            "/models/flair-ner-english-fast-tokenization/1/embeddings.bin")
-        self.model = TritonFastNEREmbedding(self.embeddings)
+        self.viterbi_decoder = torch.load(
+            "/models/flair-ner-english-fast-viterbi-decoder/1/viterbi_decoder.bin")
+
+        self.model = TritonFastNERViterbi(self.viterbi_decoder)
 
     def execute(self, requests):
         """`execute` MUST be implemented in every Python model. `execute`
@@ -89,7 +81,6 @@ class TritonPythonModel:
         """
 
         output0_dtype = self.output0_dtype
-        output1_dtype = self.output1_dtype
         responses = []
 
         # Every Python backend must iterate over everyone of the requests
@@ -97,25 +88,32 @@ class TritonPythonModel:
         for request in requests:
             # Get input
             sentence_bytes = pb_utils.get_input_tensor_by_name(
-                request, "sentence_bytes").as_numpy().squeeze().tolist()
-
+                request, "sentence_bytes").as_numpy().tolist()
             sentence_string = bytes_to_string(sentence_bytes)
-            sentence = [Sentence(sentence_string)]
-            sorted_lengths, sentence_tensor = self.model.forward(
-                sentences=sentence)
+
+            sentences = [Sentence(sentence_string)]
+
+            features = torch.tensor(pb_utils.get_input_tensor_by_name(
+                request, "features").as_numpy()).to(DEVICE)
+
+            sorted_lengths = torch.tensor(pb_utils.get_input_tensor_by_name(
+                request, "sorted_lengths").as_numpy()).to(DEVICE)
+
+            transitions = torch.tensor(pb_utils.get_input_tensor_by_name(
+                request, "transitions").as_numpy()).to(DEVICE)
+
+            tagged_sentences_dict = self.model.forward(
+                sentences, features, sorted_lengths, transitions)
+
+            tagged_sentences = string_to_bytes(tagged_sentences_dict)
 
             out_tensor_0 = pb_utils.Tensor(
-                "sorted_lengths",
-                sorted_lengths.cpu().numpy().astype(output0_dtype))
-
-            out_tensor_1 = pb_utils.Tensor(
-                "sentence_tensor",
-                sentence_tensor.cpu().numpy().astype(output1_dtype))
+                "tagged_sentences",
+                tagged_sentences.astype(output0_dtype))
 
             inference_response = pb_utils.InferenceResponse(
                 output_tensors=[
                     out_tensor_0,
-                    out_tensor_1,
                 ]
             )
             responses.append(inference_response)
@@ -129,4 +127,4 @@ class TritonPythonModel:
         Implementing `finalize` function is OPTIONAL. This function allows
         the model to perform any necessary clean ups before exit.
         """
-        print("TritonFastNEREmbedding cleaning up...")
+        print("TritonFastNERViterbi cleaning up...")

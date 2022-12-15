@@ -3,11 +3,10 @@ import torch
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 
-class TritonFastNERTagger(torch.nn.Module):
-    def __init__(self, embeddings, viterbi_decoder):
-        super(TritonFastNERTagger, self).__init__()
+class TritonFastNEREmbedding(torch.nn.Module):
+    def __init__(self, embeddings):
+        super(TritonFastNEREmbedding, self).__init__()
         self.embeddings = embeddings
-        self.viterbi_decoder = viterbi_decoder
 
     def forward(self, sentences):
         self.embeddings.embed(sentences)

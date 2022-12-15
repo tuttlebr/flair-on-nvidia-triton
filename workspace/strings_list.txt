@@ -1,4 +1,4 @@
-With the belief that the PC one day would become a consumer device for enjoying games and multimedia, NVIDIA is founded by Jensen Huang, Chris Malachowsky and Curtis Priem.
+NVIDIA is founded by Jensen Huang, Chris Malachowsky and Curtis Priem.
 At the time, there were more than two dozen graphics chips companies, a number that would soar to 70 three years later.
 By 2006, NVIDIA was the only independent still operating.
 NVIDIA's reaches its first strategic partnership with SGS-Thomson Microelectronics to manufacture the company's single-chip graphical-user interface accelerator.
@@ -6,5 +6,4 @@ Diamond Multimedia Systems is selected to install the chips in multimedia accele
 Sega, the leader in arcade games, ports Virtual Fighter to be the first 3D game to run on NVIDIA graphics.
 NVIDIA unveils its first Microsoft DirectX drivers with support for Direct3D, an API used to render 3D graphics where performance is critical.
 The company introduces RIVA 128, the world's first 128-bit 3D processor.
-NVIDIA pioneered accelerated computing to tackle challenges no one else can solve. 
-Our work in AI and the metaverse is profoundly impacting society and transforming the world’s largest industries—from gaming to robotics, self-driving cars to life-saving healthcare, climate change to virtual worlds where we can all connect and create.
+NVIDIA pioneered accelerated computing to tackle challenges no one else can solve.

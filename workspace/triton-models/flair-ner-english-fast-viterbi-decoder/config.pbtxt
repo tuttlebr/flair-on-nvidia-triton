@@ -9,25 +9,31 @@ version_policy {
 max_batch_size: 0
 
 input {
-    name: "features"
-    data_type: TYPE_FP32
-    dims: [ 1, -1, 20, 20 ]
+  name: "sentence_bytes"
+  data_type: TYPE_INT64
+  dims: [ -1 ]
   }
 
 input {
-    name: "sorted_lengths"
-    data_type: TYPE_INT64
-    dims: [ 1 ]
+  name: "features"
+  data_type: TYPE_FP32
+  dims: [ 1, -1, 20, 20 ]
   }
 
 input {
-    name: "transitions"
-    data_type: TYPE_FP32
-    dims: [ 20, 20 ]
+  name: "sorted_lengths"
+  data_type: TYPE_INT64
+  dims: [ 1 ]
   }
 
-  output {
-    name: "sentences"
-    data_type: TYPE_INT64
-    dims: [ -1 ]
+input {
+  name: "transitions"
+  data_type: TYPE_FP32
+  dims: [ 20, 20 ]
+  }
+
+output {
+  name: "tagged_sentences"
+  data_type: TYPE_INT64
+  dims: [ -1 ]
   }

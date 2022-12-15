@@ -10,7 +10,7 @@ string_list = [
 
 save_model_as = "/workspace/triton-models/flair-ner-english-fast/1/model.pt"
 save_embeddings_as = "/workspace/triton-models/flair-ner-english-fast-tokenization/1/embeddings.bin"
-save_viterbi_decoder_as = "/workspace/triton-models/flair-ner-english-fast-tokenization/1/viterbi_decoder.bin"
+save_viterbi_decoder_as = "/workspace/triton-models/flair-ner-english-fast-viterbi-decoder/1/viterbi_decoder.bin"
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -20,10 +20,9 @@ logger.setLevel(logging.INFO)
 
 
 class TritonFastNERTagger(torch.nn.Module):
-    def __init__(self, tagger, viterbi_decoder):
+    def __init__(self, tagger):
         super(TritonFastNERTagger, self).__init__()
         self.tagger = tagger
-        self.viterbi_decoder = viterbi_decoder
 
     def forward(self, sentences):
         self.tagger.embed(sentences)
@@ -106,7 +105,7 @@ if __name__ == '__main__':
     model = SequenceTagger.load("flair/ner-english-fast")
     viterbi_decoder = model.viterbi_decoder
     embeddings = model.embeddings
-    tagger = TritonFastNERTagger(embeddings, viterbi_decoder)
+    tagger = TritonFastNERTagger(embeddings)
     sentences = [Sentence(string) for string in string_list]
     sorted_lengths, sentence_tensor = tagger.forward(sentences)
     model.__delattr__("embeddings")
