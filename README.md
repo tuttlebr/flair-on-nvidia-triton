@@ -2,6 +2,95 @@
 
 Scripts to help deploy the Flair ner-english-fast model on Triton Server as a TorchScript model.
 
+### Input
+
+1. String to Integer:
+   1. Sentence: `NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .`
+   2. Encoded Sentence:
+      ```python
+      array([ 78, 86, 73, 68, 73, 65, 32, 105, 115, 32, 102, 111, 117,
+      110, 100, 101, 100, 32, 98, 121, 32, 74, 101, 110, 115, 101,
+      110, 32, 72, 117, 97, 110, 103, 44, 32, 67, 104, 114, 105,
+      115, 32, 77, 97, 108, 97, 99, 104, 111, 119, 115, 107, 121,
+      32, 97, 110, 100, 32, 67, 117, 114, 116, 105, 115, 32, 80,
+      114, 105, 101, 109, 46])
+      ```
+
+### Output
+
+1. String to Integer:
+   1. Tagged Sentence as Bytes
+      ```python
+      array([123,  39,  78,  86,  73,  68,  73,  65,  32, 105, 115,  32, 102,
+       111, 117, 110, 100, 101, 100,  32,  98, 121,  32,  74, 101, 110,
+       115, 101, 110,  32,  72, 117,  97, 110, 103,  32,  44,  32,  67,
+       104, 114, 105, 115,  32,  77,  97, 108,  97,  99, 104, 111, 119,
+       115, 107, 121,  32,  97, 110, 100,  32,  67, 117, 114, 116, 105,
+       115,  32,  80, 114, 105, 101, 109,  32,  46,  39,  58,  32,  91,
+       123,  39, 101, 110, 116, 105, 116, 121,  95, 103, 114, 111, 117,
+       112,  39,  58,  32,  39,  79,  82,  71,  39,  44,  32,  39, 115,
+       116,  97, 114, 116,  39,  58,  32,  48,  44,  32,  39, 119, 111,
+       114, 100,  39,  58,  32,  39,  78,  86,  73,  68,  73,  65,  39,
+        44,  32,  39, 101, 110, 100,  39,  58,  32,  54,  44,  32,  39,
+       115,  99, 111, 114, 101,  39,  58,  32,  57,  57, 125,  44,  32,
+       123,  39, 101, 110, 116, 105, 116, 121,  95, 103, 114, 111, 117,
+       112,  39,  58,  32,  39,  80,  69,  82,  39,  44,  32,  39, 115,
+       116,  97, 114, 116,  39,  58,  32,  50,  49,  44,  32,  39, 119,
+       111, 114, 100,  39,  58,  32,  39,  74, 101, 110, 115, 101, 110,
+        32,  72, 117,  97, 110, 103,  39,  44,  32,  39, 101, 110, 100,
+        39,  58,  32,  51,  51,  44,  32,  39, 115,  99, 111, 114, 101,
+        39,  58,  32,  57,  57, 125,  44,  32, 123,  39, 101, 110, 116,
+       105, 116, 121,  95, 103, 114, 111, 117, 112,  39,  58,  32,  39,
+        80,  69,  82,  39,  44,  32,  39, 115, 116,  97, 114, 116,  39,
+        58,  32,  51,  53,  44,  32,  39, 119, 111, 114, 100,  39,  58,
+        32,  39,  67, 104, 114, 105, 115,  32,  77,  97, 108,  97,  99,
+       104, 111, 119, 115, 107, 121,  39,  44,  32,  39, 101, 110, 100,
+        39,  58,  32,  53,  50,  44,  32,  39, 115,  99, 111, 114, 101,
+        39,  58,  32,  57,  57, 125,  44,  32, 123,  39, 101, 110, 116,
+       105, 116, 121,  95, 103, 114, 111, 117, 112,  39,  58,  32,  39,
+        80,  69,  82,  39,  44,  32,  39, 115, 116,  97, 114, 116,  39,
+        58,  32,  53,  55,  44,  32,  39, 119, 111, 114, 100,  39,  58,
+        32,  39,  67, 117, 114, 116, 105, 115,  32,  80, 114, 105, 101,
+       109,  39,  44,  32,  39, 101, 110, 100,  39,  58,  32,  54,  57,
+        44,  32,  39, 115,  99, 111, 114, 101,  39,  58,  32,  57,  57,
+       125,  93, 125])
+      ```
+   2. Decoded:
+   ```json
+   {
+     "NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .": [
+       {
+         "entity_group": "ORG",
+         "start": 0,
+         "word": "NVIDIA",
+         "end": 6,
+         "score": 99
+       },
+       {
+         "entity_group": "PER",
+         "start": 21,
+         "word": "Jensen Huang",
+         "end": 33,
+         "score": 99
+       },
+       {
+         "entity_group": "PER",
+         "start": 35,
+         "word": "Chris Malachowsky",
+         "end": 52,
+         "score": 99
+       },
+       {
+         "entity_group": "PER",
+         "start": 57,
+         "word": "Curtis Priem",
+         "end": 69,
+         "score": 99
+       }
+     ]
+   }
+   ```
+
 ## Model Conversion to TorchScript
 
 The flair models are a composition of multiple models which complete embedding and tagging of strings. The default method modifies a `Sentence` inplace. Serving on Triton will convert any string-as-bytes input to the appropriate tokenization and embeding used in the original flair ner-fast model. You can convert the original meta-model hosted on HuggingFace by running:
@@ -22,7 +111,7 @@ docker compose up triton-server
 
 ## Performance
 
-There is a script which utilized NVIDIA's `perf_analyzer` tool which can quickly report details about latency for your model set up.
+There is a script which utilized NVIDIA"s `perf_analyzer` tool which can quickly report details about latency for your model set up.
 
 ```sh
 docker compose up triton-client
