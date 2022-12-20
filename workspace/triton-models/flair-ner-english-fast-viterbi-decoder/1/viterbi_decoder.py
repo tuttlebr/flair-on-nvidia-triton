@@ -10,15 +10,15 @@ DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 
 class TritonFastNERViterbi(torch.nn.Module):
-    def __init__(self, viterbi_decoder):
+    def __init__(self, viterbi_decoder, transitions):
         super(TritonFastNERViterbi, self).__init__()
         self.viterbi_decoder = viterbi_decoder
+        self.transitions = transitions
 
-    def forward(self, sentences, features, sorted_lengths, transitions):
+    def forward(self, sentences, features, sorted_lengths):
 
-        embedding = (features, sorted_lengths, transitions)
-
-        predictions, all_tags = self.viterbi_decoder.decode(
+        embedding = (features, sorted_lengths, self.transitions)
+        predictions, _ = self.viterbi_decoder.decode(
             embedding, True, sentences)
 
         for sentence, sentence_predictions in zip(sentences, predictions):

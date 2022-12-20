@@ -1,4 +1,9 @@
 import torch
+import logging
+
+logging.basicConfig(format="%(asctime)s %(message)s")
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -37,5 +42,4 @@ class TritonFastNEREmbedding(torch.nn.Module):
             ]
         )
         sorted_lengths = torch.tensor(lengths, dtype=torch.long)
-
         return sorted_lengths, sentence_tensor

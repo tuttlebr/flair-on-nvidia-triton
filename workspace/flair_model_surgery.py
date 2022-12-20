@@ -7,12 +7,12 @@ from flair.models import SequenceTagger
 import logging
 
 string_list = [
-    "With the belief that the PC one day would become a consumer device for enjoying games and multimedia, NVIDIA is founded by Jensen Huang, Chris Malachowsky and Curtis Priem.",
-]
+    "With the belief that the PC one day would become a consumer device for enjoying games and multimedia, NVIDIA is founded by Jensen Huang, Chris Malachowsky and Curtis Priem."]
 
 save_model_as = "/workspace/triton-models/flair-ner-english-fast/1/model.pt"
 save_embeddings_as = "/workspace/triton-models/flair-ner-english-fast-tokenization/1/embeddings.bin"
 save_viterbi_decoder_as = "/workspace/triton-models/flair-ner-english-fast-viterbi-decoder/1/viterbi_decoder.bin"
+save_crf_transitions_as = "/workspace/triton-models/flair-ner-english-fast-viterbi-decoder/1/crf_transitions.bin"
 
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 
@@ -100,32 +100,56 @@ class TritonFastNERModel(torch.nn.Module):
         # -- A tensor of shape (aggregated sequence length for all sentences in batch, tagset size) for linear layer
         if self.model.use_crf:
             features = self.model.crf(features)
-        return features, sorted_lengths, self.model.crf.transitions
+
+        return features, sorted_lengths
 
 
 if __name__ == '__main__':
     model = SequenceTagger.load("flair/ner-english-fast")
     viterbi_decoder = model.viterbi_decoder
     embeddings = model.embeddings
+    model.__delattr__("embeddings")
+    model.__delattr__("viterbi_decoder")
     tagger = TritonFastNERTagger(embeddings)
     sentences = [Sentence(string) for string in string_list]
     sorted_lengths, sentence_tensor = tagger.forward(sentences)
-    model.__delattr__("embeddings")
+
+    logger.info(
+        "[INFO] sorted_lengths/INPUT__0 shape:  {}".format(sorted_lengths.shape))
+    logger.info(
+        "[INFO] sorted_lengths/INPUT__0 values:  {}".format(sorted_lengths))
+    logger.info(
+        "[INFO] sentence_tensor/INPUT__1 shape: {}".format(sentence_tensor.shape))
+
     traced_model = TritonFastNERModel(model)
-    features, sorted_lengths, transitions = traced_model.forward(
+
+    features, sorted_lengths = traced_model.forward(
         sorted_lengths, sentence_tensor)
+
+    logger.info("[INFO] features/OUTPUT__0 shape:  {}".format(features.shape))
+    logger.info(
+        "[INFO] sorted_lengths/OUTPUT__1 shape: {}".format(sorted_lengths.shape))
+    logger.info(
+        "[INFO] sorted_lengths/OUTPUT__1 values: {}".format(sorted_lengths))
+
+    logger.info(
+        "[INFO] transitions shape: {}".format(model.crf.transitions.shape))
 
     traced_model = torch.jit.trace(
         traced_model, [
             sorted_lengths, sentence_tensor])
 
     torch.jit.save(traced_model, save_model_as)
-    logger.info("[INFO] Saved TorchScript model as {}".format(save_model_as))
+    logger.info("[INFO] Saved TorchScript model as: {}".format(save_model_as))
 
     torch.save(embeddings, save_embeddings_as)
     logger.info(
-        "[INFO] Saved Flair Embeddings as {}".format(save_embeddings_as))
+        "[INFO] Saved Flair Embeddings as: {}".format(save_embeddings_as))
 
     torch.save(viterbi_decoder, save_viterbi_decoder_as)
-    logger.info("[INFO] Saved Flair Viterbi Decoder as {}".format(
+    logger.info("[INFO] Saved Flair Viterbi Decoder as: {}".format(
         save_viterbi_decoder_as))
+
+    torch.save(model.crf.transitions, save_crf_transitions_as)
+    logger.info("[INFO] Saved Flair CRF Transitions as: {}".format(
+        save_crf_transitions_as))

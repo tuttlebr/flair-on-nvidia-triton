@@ -58,7 +58,11 @@ class TritonPythonModel:
         self.viterbi_decoder = torch.load(
             "/models/flair-ner-english-fast-viterbi-decoder/1/viterbi_decoder.bin")
 
-        self.model = TritonFastNERViterbi(self.viterbi_decoder)
+        self.transitions = torch.load(
+            "/models/flair-ner-english-fast-viterbi-decoder/1/crf_transitions.bin").detach()
+
+        self.model = TritonFastNERViterbi(
+            self.viterbi_decoder, self.transitions)
 
     def execute(self, requests):
         """`execute` MUST be implemented in every Python model. `execute`
@@ -81,10 +85,11 @@ class TritonPythonModel:
         """
 
         output0_dtype = self.output0_dtype
-        responses = []
 
         # Every Python backend must iterate over everyone of the requests
         # and create a pb_utils.InferenceResponse for each of them.
+        responses = []
+
         for request in requests:
             # Get input
             sentence_bytes = pb_utils.get_input_tensor_by_name(
@@ -99,11 +104,8 @@ class TritonPythonModel:
             sorted_lengths = torch.tensor(pb_utils.get_input_tensor_by_name(
                 request, "sorted_lengths").as_numpy()).to(DEVICE)
 
-            transitions = torch.tensor(pb_utils.get_input_tensor_by_name(
-                request, "transitions").as_numpy()).to(DEVICE)
-
             tagged_sentences_dict = self.model.forward(
-                sentences, features, sorted_lengths, transitions)
+                sentences, features, sorted_lengths)
 
             tagged_sentences = string_to_bytes(tagged_sentences_dict)
 
