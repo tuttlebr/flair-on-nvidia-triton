@@ -1,23 +1,13 @@
 from flair.data import Sentence
+from flair.models import SequenceTagger
 import triton_python_backend_utils as pb_utils
 import logging
 import json
-import torch
 import numpy as np
-
-from viterbi_decoder import TritonFastNERViterbi, DEVICE
 
 logging.basicConfig(format="%(asctime)s %(message)s")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-
-def string_to_bytes(string, encoding="utf-8"):
-    return np.array(list(bytes(str(string), encoding)))
-
-
-def bytes_to_string(byte_list):
-    return bytes(byte_list).decode()
 
 
 class TritonPythonModel:
@@ -46,7 +36,7 @@ class TritonPythonModel:
 
         # Get output configs
         output0_config = pb_utils.get_output_config_by_name(
-            self.model_config, "tagged_sentences"
+            self.model_config, "OUTPUT_0"
         )
 
         # Convert Triton types to numpy types
@@ -55,14 +45,8 @@ class TritonPythonModel:
         )
 
         # Load the flair model
-        self.viterbi_decoder = torch.load(
-            "/models/flair-ner-english-fast-viterbi-decoder/1/viterbi_decoder.bin")
-
-        self.transitions = torch.load(
-            "/models/flair-ner-english-fast-viterbi-decoder/1/crf_transitions.bin").detach()
-
-        self.model = TritonFastNERViterbi(
-            self.viterbi_decoder, self.transitions)
+        self.model = SequenceTagger.load(
+            "/models/ner-english-fast/1/model.bin")
 
     def execute(self, requests):
         """`execute` MUST be implemented in every Python model. `execute`
@@ -91,27 +75,30 @@ class TritonPythonModel:
         responses = []
 
         for request in requests:
-            # Get input
-            sentence_bytes = pb_utils.get_input_tensor_by_name(
-                request, "sentence_bytes").as_numpy().tolist()
-            sentence_string = bytes_to_string(sentence_bytes)
+            sentences = pb_utils.get_input_tensor_by_name(
+                request, "INPUT_0").as_numpy().astype(object).squeeze()
 
-            sentences = [Sentence(sentence_string)]
+            sentences = [Sentence(str(sentence)[2:]) for sentence in sentences]
 
-            features = torch.tensor(pb_utils.get_input_tensor_by_name(
-                request, "features").as_numpy()).to(DEVICE)
+            self.model.predict(sentences)
 
-            sorted_lengths = torch.tensor(pb_utils.get_input_tensor_by_name(
-                request, "sorted_lengths").as_numpy()).to(DEVICE)
-
-            tagged_sentences_dict = self.model.forward(
-                sentences, features, sorted_lengths)
-
-            tagged_sentences = string_to_bytes(tagged_sentences_dict)
+            tagged_sentences_dict = {}
+            for sentence in sentences:
+                sentence_list = []
+                for entity in sentence.get_spans("ner"):
+                    sentence_list.append(
+                        {
+                            "entity_group": entity.tag,
+                            "start": entity.start_position,
+                            "word": entity.text,
+                            "end": entity.end_position,
+                            "score": int(entity.score * 100),
+                        }
+                    )
+                tagged_sentences_dict[sentence.text] = sentence_list
 
             out_tensor_0 = pb_utils.Tensor(
-                "tagged_sentences",
-                tagged_sentences.astype(output0_dtype))
+                "OUTPUT_0", np.array(tagged_sentences_dict).astype(object))
 
             inference_response = pb_utils.InferenceResponse(
                 output_tensors=[
@@ -120,8 +107,6 @@ class TritonPythonModel:
             )
             responses.append(inference_response)
 
-        # You should return a list of pb_utils.InferenceResponse. Length
-        # of this list must match the length of `requests` list.
         return responses
 
     def finalize(self):
@@ -129,4 +114,4 @@ class TritonPythonModel:
         Implementing `finalize` function is OPTIONAL. This function allows
         the model to perform any necessary clean ups before exit.
         """
-        print("TritonFastNERViterbi cleaning up...")
+        print("Triton Flair NER English Fast model cleaning up...")

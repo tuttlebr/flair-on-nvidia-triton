@@ -1,0 +1,21 @@
+name: "ner-english-fast"
+backend: "python"
+default_model_filename: "model.py"
+max_batch_size: 32
+dynamic_batching {
+  preferred_batch_size: [ 1, 16, 32 ]
+  max_queue_delay_microseconds: 2000
+}
+
+
+input {
+    name: "INPUT_0"
+    data_type: TYPE_STRING
+    dims: [ -1 ]
+    }
+
+output {
+    name: "OUTPUT_0"
+    data_type: TYPE_STRING
+    dims: [ -1 ]
+    }
