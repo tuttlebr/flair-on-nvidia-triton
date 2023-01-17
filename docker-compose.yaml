@@ -68,6 +68,28 @@ services:
         source: workspace/triton-models
         target: /models
 
+  perf-analyzer:
+    image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3-sdk
+    shm_size: 8g
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    depends_on:
+      - triton-server
+    volumes:
+      - type: bind
+        source: workspace
+        target: /workspace
+    entrypoint:
+      [
+        "/workspace/perf-analyzer.sh"
+      ]
+    hostname: perf-analyzer
+    networks:
+      triton-server:
+        ipv4_address: ${TRITON_CLIENT_IP}
+
+
 networks:
   triton-server:
     driver: bridge
