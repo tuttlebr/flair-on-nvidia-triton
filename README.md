@@ -4,56 +4,54 @@ Scripts to help deploy the Flair ner-english-fast model on Triton Server as a To
 
 ### Input
 
-1. Sentence(s): `NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .`
+1. Sentence(s)
+
+```bash
+NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .
+```
 
 ### Output
 
-1. Decoded:
+1. Decoded
 
-````json
-      {
-        "NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .": [
-          {
-            "entity_group": "ORG",
-            "start": 0,
-            "word": "NVIDIA",
-            "end": 6,
-            "score": 99
-          },
-          {
-            "entity_group": "PER",
-            "start": 21,
-            "word": "Jensen Huang",
-            "end": 33,
-            "score": 99
-          },
-          {
-            "entity_group": "PER",
-            "start": 35,
-            "word": "Chris Malachowsky",
-            "end": 52,
-            "score": 99
-          },
-          {
-            "entity_group": "PER",
-            "start": 57,
-            "word": "Curtis Priem",
-            "end": 69,
-            "score": 99
-          }
-        ]
-      }
-      ```
+```json
+{
+  "NVIDIA is founded by Jensen Huang , Chris Malachowsky and Curtis Priem .": [
+    {
+      "entity_group": "ORG",
+      "start": 0,
+      "word": "NVIDIA",
+      "end": 6,
+      "score": 99
+    },
+    {
+      "entity_group": "PER",
+      "start": 21,
+      "word": "Jensen Huang",
+      "end": 33,
+      "score": 99
+    },
+    {
+      "entity_group": "PER",
+      "start": 35,
+      "word": "Chris Malachowsky",
+      "end": 52,
+      "score": 99
+    },
+    {
+      "entity_group": "PER",
+      "start": 57,
+      "word": "Curtis Priem",
+      "end": 69,
+      "score": 99
+    }
+  ]
+}
+```
 
-## Model Conversion to TorchScript
+## Model download
 
-The flair models are a composition of multiple models which complete embedding and tagging of strings. The default method modifies a `Sentence` inplace. Serving on Triton will convert any string-as-bytes input to the appropriate tokenization and embeding used in the original flair ner-fast model. You can convert the original meta-model hosted on HuggingFace by running:
-
-```sh
-docker compose up ner-english-fast
-````
-
-and from within the Jupyter Lab terminal, `python3 flair_model_surgery.py`.
+You'll need download the original model from flair and place it in workspace/triton-models/ner-english-fast/1/model.bin
 
 ## Launch Triton Server
 
@@ -125,4 +123,8 @@ Request concurrency: 4
 
 Inferences/Second vs. Client p95 Batch Latency
 Concurrency: 4, throughput: 93.2384 infer/sec, latency 44660 usec
+```
+
+```
+
 ```
