@@ -68,31 +68,6 @@ services:
         source: workspace/triton-models
         target: /models
 
-  perf-analyzer:
-    image: nvcr.io/nvidia/tritonserver:${MAJOR_BRANCH}-py3-sdk
-    shm_size: 8g
-    ulimits:
-      memlock: -1
-      stack: 67108864
-    depends_on:
-      - triton-server
-    ports:
-      - 8000:8000
-      - 8001:8001
-      - 8002:8002
-    entrypoint:
-      [
-        "/data/perf_analyzer_entrypoint.sh"
-      ]
-    hostname: perf-analyzer
-    networks:
-      triton-server:
-        ipv4_address: ${INTERACTIVE_CLIENT_IP}
-    volumes:
-      - type: bind
-        source: workspace/triton-models/flair-ner-english-fast-ensemble/1
-        target: /data
-
 networks:
   triton-server:
     driver: bridge
